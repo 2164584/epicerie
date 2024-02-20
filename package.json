@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "puppeteer": "^22.1.0"
+  }
+}
