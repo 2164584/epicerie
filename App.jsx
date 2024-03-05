@@ -1,11 +1,37 @@
 import './App.css';
+import React, { useEffect, useState } from 'react';
 import Item from "./component/Item";
 import ItemList from "./component/ItemList";
 import Pomme from "./image/apple.jpg"
 import Avocat from "./image/avocat.jpg"
 
-
 function App() {
+  const puppeteer = require('puppeteer');
+  const fs = require('fs');
+
+  (async () => {
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.goto('https://example.com');
+  
+    // Example of scraping image URLs
+    const imageUrls = await page.evaluate(() => {
+      const images = Array.from(document.querySelectorAll('img'));
+      return images.map(img => img.src);
+    });
+  
+    // Download and save images
+    for (let i = 0; i < imageUrls.length; i++) {
+      const imageUrl = imageUrls[i];
+      const imageBuffer = await page.evaluate(async (url) => {
+        const response = await fetch(url);
+        return response.arrayBuffer();
+      }, imageUrl);
+      fs.writeFileSync(`image${i + 1}.jpg`, Buffer.from(imageBuffer));
+    }
+  
+    await browser.close();
+  })();
 
   let itemList = [
       {
@@ -31,6 +57,16 @@ function App() {
           isDiscountedNextWeek: true
       }
   ]
+
+  //lauch function at the start of the app
+  useEffect(() => {
+    fetch('http://localhost:3001/items')
+      .then(response => response.json())
+      .then(data => {
+          console.log(data)
+      })
+  }, [])
+
 
 
   return (
